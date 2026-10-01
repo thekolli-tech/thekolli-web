@@ -27,13 +27,15 @@ Then visit `http://localhost:8000`.
 npm run build
 ```
 
-This creates a clean `dist` folder containing the deployable `index.html`, `styles.css`, and `script.js` files. Upload the contents of `dist` to any static host such as Netlify, Vercel, GitHub Pages, or a standard web server.
+This creates a clean `dist` folder containing the deployable `index.html`, `services.html`, `styles.css`, `script.js`, and `services.js` files. Upload the contents of `dist` to any static host such as Netlify, Vercel, GitHub Pages, or a standard web server.
 
 ## Files
 
 - `index.html` - page structure and content
+- `services.html` - software, SaaS, ERP, HRMS, payroll, AI, cloud, and digital marketing services
 - `styles.css` - layout, responsive styles, and animations
 - `script.js` - loader, interactions, canvas effects, orbit content, and contact form
+- `services.js` - services page mobile navigation
 - `thekolli.html` - original self-contained version kept for reference
 
 ## Contact form
