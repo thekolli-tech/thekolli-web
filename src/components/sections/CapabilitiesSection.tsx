@@ -19,12 +19,12 @@ export function CapabilitiesSection() {
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
         {/* Section Header */}
         <div className="max-w-3xl">
-          <SectionEyebrow tag="SECTION 03">CAPABILITIES &amp; STACK</SectionEyebrow>
+          <SectionEyebrow tag="SECTION 03">SERVICES &amp; CAPABILITIES</SectionEyebrow>
           <h2 className="editorial-section-title mt-4 text-[#242424]">
-            Building across the layers of modern technology.
+            Complete software, AI automation, and cloud systems.
           </h2>
-          <p className="mt-4 font-hand-body text-xl text-[#777777] sm:text-2xl">
-            Our capabilities span mathematical modeling to full-stack platform orchestration. We deploy disciplined engineering across each operational layer.
+          <p className="mt-4 font-hand-body text-xl text-[#242424] sm:text-2xl">
+            From initial product architecture to the operational infrastructure your team relies on daily, we bring software engineering, AI automation, cloud systems, and revenue growth under one roof.
           </p>
         </div>
 

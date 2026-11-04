@@ -72,11 +72,25 @@ export function getOrganizationJsonLd() {
     url: siteConfig.domain,
     logo: `${siteConfig.domain}/brand/monochrome-graphite-ribbon.png`,
     description: siteConfig.description,
+    founder: {
+      "@type": "Person",
+      name: siteConfig.founder,
+    },
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        telephone: siteConfig.contact.phone,
+        contactType: "customer service",
+        email: siteConfig.contact.email,
+        availableLanguage: ["English"],
+      },
+    ],
     knowsAbout: [
-      "Artificial Intelligence",
-      "Software Engineering",
-      "Systems Engineering",
-      "Enterprise Platforms",
+      "Custom Software Development",
+      "SaaS Product Engineering",
+      "Artificial Intelligence & Agentic Automation",
+      "Cloud Infrastructure & DevOps",
+      "HRMS & People Systems",
     ],
     slogan: siteConfig.tagline,
   };

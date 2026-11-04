@@ -34,12 +34,12 @@ export function EngineeringPhilosophySection() {
       <div className="mx-auto max-w-7xl px-6 lg:px-12">
         {/* Section Header */}
         <div className="max-w-3xl">
-          <SectionEyebrow tag="SECTION 02">ENGINEERING PHILOSOPHY</SectionEyebrow>
+          <SectionEyebrow tag="SECTION 02">THE STANDARD WE WORK TO</SectionEyebrow>
           <h2 className="editorial-section-title mt-4 text-[#242424]">
-            Good engineering begins with better questions.
+            Engineering integrity first. Zero compromise.
           </h2>
-          <p className="mt-4 font-hand-body text-xl text-[#777777] sm:text-2xl">
-            We structure our engineering culture around four immutable principles. These dictate how we formulate problems, evaluate architectures, and commit code.
+          <p className="mt-4 font-hand-body text-xl text-[#242424] sm:text-2xl">
+            We structure our engineering culture around four immutable standards. These dictate how we formulate problems, evaluate architectures, and commit production code.
           </p>
         </div>
 

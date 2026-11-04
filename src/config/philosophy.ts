@@ -10,38 +10,38 @@ export interface PhilosophyPrinciple {
 export const engineeringPrinciples: PhilosophyPrinciple[] = [
   {
     number: "01",
-    name: "Precision",
-    lead: "Exactitude before execution.",
+    name: "Business First",
+    lead: "We start with the business outcome, not a favorite technology.",
     description:
-      "Every architecture begins with unyielding scrutiny. We believe ambiguous requirements produce fragile software; rigorous definitions, explicit invariants, and mathematical clarity create software that withstands time.",
+      "Every system must make operations clearer, faster, and more valuable. We analyze core organizational workflows, economic constraints, and operational bottlenecks before formulating computational architectures.",
     graphiteSketchType: "precision",
-    handwrittenNote: "Measure twice, verify continuous.",
+    handwrittenNote: "Outcome precedes technology.",
   },
   {
     number: "02",
-    name: "Intelligence",
-    lead: "Purposeful computation over novelty.",
+    name: "Visible Progress",
+    lead: "Working software grounded in measurable reality from day one.",
     description:
-      "We treat artificial intelligence not as marketing sheen, but as an advanced cognitive instrument. Models must serve defined operational needs with verifiable boundaries and explainable mechanisms.",
-    graphiteSketchType: "intelligence",
-    handwrittenNote: "Cognition rooted in structure.",
+      "Clear milestones, direct communication, and demonstrably working software keep decisions grounded in reality. We avoid black-box delays and align stakeholder feedback at every iterative release.",
+    graphiteSketchType: "engineering",
+    handwrittenNote: "Clear milestones, zero black boxes.",
   },
   {
     number: "03",
-    name: "Engineering",
-    lead: "Craftsmanship governed by physical discipline.",
+    name: "Built to Last",
+    lead: "Engineering integrity and permanent structural durability.",
     description:
-      "True engineering respects constraints, minimizes complexity, and eliminates unnecessary dependencies. We design systems to be transparent, debuggable, and maintainable across long lifecycles.",
-    graphiteSketchType: "engineering",
-    handwrittenNote: "Simplicity is an engineered triumph.",
+      "We write clean, modular, and maintainable software designed to withstand real production pressures. No fragile shortcuts, no unmaintained dependencies, and zero technical debt passed to our partners.",
+    graphiteSketchType: "evolution",
+    handwrittenNote: "Architected for generational scale.",
   },
   {
     number: "04",
-    name: "Evolution",
-    lead: "Adaptive systems built to endure flux.",
+    name: "Product Mindset",
+    lead: "Treating every engagement with founder-level ownership.",
     description:
-      "Technology horizons shift continuously. We build modular foundations that absorb technological change without architectural collapse, letting organizations evolve gracefully alongside modern computing.",
-    graphiteSketchType: "evolution",
-    handwrittenNote: "Designed for perpetual renewal.",
+      "We don't view software as isolated billable tickets. A senior engineering team stays close to the problem from first principles through production deployment and continuous operational evolution.",
+    graphiteSketchType: "intelligence",
+    handwrittenNote: "Engineer-to-engineer accountability.",
   },
 ];

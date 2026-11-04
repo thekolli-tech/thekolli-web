@@ -26,18 +26,18 @@ export function CompanyIntroSection() {
             <SectionEyebrow tag="SECTION 01">WHO WE ARE</SectionEyebrow>
 
             <h2 className="editorial-section-title mt-4 text-[#242424]">
-              Technology is only as powerful as the thinking behind it.
+              Technology with purpose. Engineering with intent.
             </h2>
 
-            <div className="mt-6 space-y-4 font-hand-body text-xl leading-relaxed text-[#777777] sm:text-2xl">
+            <div className="mt-6 space-y-4 font-hand-body text-xl leading-relaxed text-[#242424] sm:text-2xl">
               <p>
-                THEKOLLI is an AI and advanced engineering company focused on developing intelligent technologies, connected software systems, and engineering-led digital solutions.
+                Founded by <strong>Charan Teja Kolli</strong>, THEKOLLI partners with ambitious companies to build complete software and SaaS products, automate operational bottlenecks with practical AI, engineer dependable cloud infrastructure, and scale revenue through digital growth.
               </p>
               <p>
-                We operate from a foundational belief: exceptional software is neither an accident of rapid iteration nor a byproduct of trend chasing. It is the result of disciplined questions, architectural foresight, and the patient alignment of modern artificial intelligence with computational fundamentals.
+                We operate from a foundational belief: exceptional software is neither an accident of rapid iteration nor a byproduct of trend chasing. It begins by understanding the business outcome first, then connecting strategy, software, and operations into one coherent system your team can own.
               </p>
               <p>
-                From complex multi-tenant business backbones to high-concurrency neural reasoning layers, we engineer software designed to function with predictable precision and resilient permanence.
+                From custom enterprise operations to autonomous agentic workflows and multi-region cloud backbones, we engineer digital systems built for the moments that matter.
               </p>
             </div>
 

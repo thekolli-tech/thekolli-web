@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Mail } from "lucide-react";
+import { Mail, MessageCircle, MapPin } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { footerNavItems } from "@/config/navigation";
 
@@ -32,12 +32,12 @@ export function Footer() {
                   THEKOLLI
                 </span>
                 <span className="font-hand-draft text-[12px] text-[#777777] leading-none mt-1">
-                  AI &amp; Advanced Engineering
+                  {siteConfig.positioning}
                 </span>
               </div>
             </Link>
 
-            <p className="mt-4 max-w-md font-hand-body text-base leading-relaxed text-[#777777]">
+            <p className="mt-4 max-w-md font-hand-body text-base leading-relaxed text-[#242424]">
               {siteConfig.description}
             </p>
 
@@ -56,7 +56,7 @@ export function Footer() {
           {/* Navigation Column (Col 7-9) */}
           <div className="lg:col-span-3">
             <h4 className="font-hand-draft text-sm font-bold uppercase tracking-wider text-[#242424]">
-              Company
+              Navigation
             </h4>
             <ul className="mt-4 space-y-2">
               {footerNavItems.navigation.map((item) => (
@@ -75,12 +75,26 @@ export function Footer() {
           {/* Contact & Inquiries (Col 10-12) */}
           <div className="lg:col-span-3">
             <h4 className="font-hand-draft text-sm font-bold uppercase tracking-wider text-[#242424]">
-              Inquiries
+              Start A Conversation
             </h4>
             <div className="mt-4 space-y-3 font-hand-body text-sm text-[#777777]">
               <div>
                 <span className="block font-hand-draft text-xs text-[#777777] uppercase">
-                  Direct Channel
+                  WhatsApp Direct Desk
+                </span>
+                <a
+                  href={siteConfig.contact.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-base font-bold text-[#242424] hover:underline"
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  <span>WhatsApp: {siteConfig.contact.phone} ↗</span>
+                </a>
+              </div>
+              <div>
+                <span className="block font-hand-draft text-xs text-[#777777] uppercase">
+                  Corporate Inquiries
                 </span>
                 <a
                   href={`mailto:${siteConfig.contact.email}`}
@@ -101,8 +115,9 @@ export function Footer() {
                   {siteConfig.contact.careersEmail}
                 </a>
               </div>
-              <div className="pt-2 font-hand-draft text-xs text-[#777777]">
-                {siteConfig.contact.address.country}
+              <div className="pt-2 font-hand-draft text-xs text-[#777777] flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" />
+                <span>{siteConfig.contact.address.country} &bull; Global Operations</span>
               </div>
             </div>
           </div>
