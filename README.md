@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# THEKOLLI
+
+> **Engineering what comes next.**  
+> *Where intelligence meets engineering.*
+
+Official repository for **THEKOLLI** corporate web platform — an AI and advanced engineering company developing intelligent technologies, connected software systems, and engineering-led digital solutions.
+
+---
+
+## Visual Design & Interaction Architecture
+
+- **Editorial Pencil Aesthetics**: Pure white drafting paper backdrop (`#FFFFFF` / `#FCFCFC`) with graphite (`#242424` / `#171717`) typography and architectural sketches.
+- **Handwritten Typography**: Google Fonts (`Kalam`, `Caveat`, `Architects Daughter`, `Patrick Hand`, `Shadows Into Light`).
+- **Interactive Notebook Canvas**: Full-document scroll-aware graphite sketch engine allowing drawing directly onto the page, complete with pressure physics, pencil grain flecks, undo (`Ctrl+Z`), and erase (`Esc`).
+- **Sharpened Graphite Cursor**: Precision pencil cursor pointing directly to the active cursor tip with dynamic drafting tilt.
+
+---
+
+## Technical Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (Turbopack, Partial Prerendering, App Router)
+- **Language**: TypeScript 5 (Strict Mode)
+- **Styling**: Tailwind CSS, CSS Variables, Procedural SVG filters
+- **Animations**: Framer Motion
+- **Icons**: Lucide Icons & Custom Graphite Architectural SVG Illustrations
+- **Database & Services**: Prisma ORM (Enterprise SQLite & Multi-Tenant Architecture)
+- **Package Manager**: pnpm
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- pnpm 9+
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Clone the repository
+git clone https://github.com/thekolli-tech/thekolligroup.git
+cd thekolligroup
+
+# Install dependencies
+pnpm install
+
+# Run database migrations / generate client
+pnpm prisma generate
+
+# Start the development server
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to view the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Production Build
 
-## Learn More
+```bash
+# Build the production bundle
+pnpm build
 
-To learn more about Next.js, take a look at the following resources:
+# Start the production server
+pnpm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contact & Candidacy
 
-## Deploy on Vercel
+- **Corporate Communication**: contact@thekolli.com
+- **Careers & Portfolio Submissions**: thekolli.in@gmail.com
+- **Jurisdiction**: India
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+&copy; 2026 THEKOLLI. All rights reserved.
