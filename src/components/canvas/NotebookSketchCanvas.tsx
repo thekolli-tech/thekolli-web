@@ -17,8 +17,8 @@ interface Stroke {
 
 /**
  * Authentic Notebook Pencil Sketching Canvas
- * - Allows the user to click, hold, and drag to draw anywhere on the website.
- * - Draws directly onto the notebook paper coordinates (scroll-aware).
+ * - Fixed-viewport canvas with zero layout footprint: CANNOT cause any trailing scroll or extra page height.
+ * - Stores absolute document coordinates so drawings stay anchored to paper as the user scrolls.
  * - Real graphite pencil physics: variable speed-pressure thickness, soft multi-layer graphite grain,
  *   and smooth quadratic bezier interpolation.
  * - Non-intrusive: preserves regular clicking on links, buttons, and inputs.
@@ -32,34 +32,10 @@ export function NotebookSketchCanvas() {
   const startTargetRef = useRef<HTMLElement | null>(null);
   const startPosRef = useRef<{ x: number; y: number } | null>(null);
   const isActivelyDrawingRef = useRef(false);
+  const rafScrollRef = useRef<number | null>(null);
 
   const [hasStrokes, setHasStrokes] = useState(false);
   const [strokeCount, setStrokeCount] = useState(0);
-
-  // Resize canvas to match full document height & viewport width with Retina scale
-  const resizeCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const docHeight = Math.max(
-      document.documentElement.scrollHeight,
-      document.body.scrollHeight,
-      window.innerHeight
-    );
-    const docWidth = document.documentElement.scrollWidth || window.innerWidth;
-
-    canvas.width = docWidth * dpr;
-    canvas.height = docHeight * dpr;
-    canvas.style.width = `${docWidth}px`;
-    canvas.style.height = `${docHeight}px`;
-
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.scale(dpr, dpr);
-      redrawAllStrokes();
-    }
-  }, []);
 
   // Render a graphite pencil segment with authentic pencil texture
   const renderPencilSegment = (
@@ -104,10 +80,9 @@ export function NotebookSketchCanvas() {
       const steps = Math.floor(dist / 3);
       for (let i = 0; i < steps; i++) {
         const t = i / steps;
-        // Interpolate along the curve
         const qx = (1 - t) * (1 - t) * mid1.x + 2 * (1 - t) * t * p1.x + t * t * mid2.x;
         const qy = (1 - t) * (1 - t) * mid1.y + 2 * (1 - t) * t * p1.y + t * t * mid2.y;
-        
+
         const offsetX = (Math.random() - 0.5) * baseWidth * 1.2;
         const offsetY = (Math.random() - 0.5) * baseWidth * 1.2;
         const grainSize = Math.random() * 0.9 + 0.4;
@@ -121,7 +96,7 @@ export function NotebookSketchCanvas() {
     ctx.restore();
   };
 
-  // Redraw all accumulated strokes (e.g. after resize or undo)
+  // Redraw all accumulated strokes anchored to document coordinates
   const redrawAllStrokes = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -130,14 +105,18 @@ export function NotebookSketchCanvas() {
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
-    ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    ctx.scale(dpr, dpr);
+    // Translate by current scroll position so drawings stay anchored to content
+    ctx.translate(-window.scrollX, -window.scrollY);
 
     for (const stroke of strokesRef.current) {
       const pts = stroke.points;
       if (pts.length < 2) continue;
 
       if (pts.length === 2) {
-        // Dot or tiny stroke
         ctx.save();
         ctx.fillStyle = "rgba(28, 28, 28, 0.75)";
         ctx.beginPath();
@@ -151,7 +130,26 @@ export function NotebookSketchCanvas() {
         renderPencilSegment(ctx, pts[i - 1], pts[i], pts[i + 1]);
       }
     }
+
+    ctx.restore();
   }, []);
+
+  // Resize canvas to strictly match viewport (100vw x 100vh) - zero page overflow
+  const resizeCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+
+    redrawAllStrokes();
+  }, [redrawAllStrokes]);
 
   // Clear all notebook drawings
   const handleClear = useCallback(() => {
@@ -163,8 +161,7 @@ export function NotebookSketchCanvas() {
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext("2d");
-      const dpr = window.devicePixelRatio || 1;
-      ctx?.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
     }
   }, []);
 
@@ -183,11 +180,16 @@ export function NotebookSketchCanvas() {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    // Document resize observer to ensure canvas stays matched to page height as content loads
-    const resizeObserver = new ResizeObserver(() => {
-      resizeCanvas();
-    });
-    resizeObserver.observe(document.body);
+    // Scroll listener translates viewport canvas smoothly
+    const handleScroll = () => {
+      if (!rafScrollRef.current) {
+        rafScrollRef.current = requestAnimationFrame(() => {
+          redrawAllStrokes();
+          rafScrollRef.current = null;
+        });
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     // Pointer events on window
     const handlePointerDown = (e: PointerEvent) => {
@@ -257,11 +259,16 @@ export function NotebookSketchCanvas() {
         pts.push(newPoint);
 
         const canvas = canvasRef.current;
-        if (canvas) {
+        if (canvas && pts.length >= 3) {
           const ctx = canvas.getContext("2d");
-          if (ctx && pts.length >= 3) {
+          if (ctx) {
+            const dpr = window.devicePixelRatio || 1;
+            ctx.save();
+            ctx.scale(dpr, dpr);
+            ctx.translate(-window.scrollX, -window.scrollY);
             const len = pts.length;
             renderPencilSegment(ctx, pts[len - 3], pts[len - 2], pts[len - 1]);
+            ctx.restore();
           }
         }
       }
@@ -309,22 +316,29 @@ export function NotebookSketchCanvas() {
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
-      resizeObserver.disconnect();
+      window.removeEventListener("scroll", handleScroll);
+      if (rafScrollRef.current) {
+        cancelAnimationFrame(rafScrollRef.current);
+      }
       window.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerUp);
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [resizeCanvas, handleUndo, handleClear]);
+  }, [resizeCanvas, redrawAllStrokes, handleUndo, handleClear]);
 
   return (
     <>
-      {/* Scroll-aligned transparent drawing canvas covering the full document height */}
+      {/* 
+        Fixed-viewport drawing canvas:
+        - Exactly matches window.innerWidth x window.innerHeight
+        - Zero layout footprint, completely eliminating trailing scroll or page overflow
+      */}
       <canvas
         ref={canvasRef}
         aria-hidden="true"
-        className="pointer-events-none absolute top-0 left-0 z-30 select-none"
+        className="pointer-events-none fixed inset-0 z-30 select-none"
       />
 
       {/* Discrete Notebook Controls (Appears only when user has sketched on the paper) */}

@@ -76,7 +76,7 @@ export default function RootLayout({
         />
         <link rel="icon" href="/brand/logo-k.png" />
       </head>
-      <body className="flex min-h-screen flex-col text-[#242424] antialiased selection:bg-[#242424] selection:text-[#FFFFFF]">
+      <body className="m-0 p-0 flex min-h-screen flex-col text-[#242424] antialiased selection:bg-[#242424] selection:text-[#FFFFFF]">
         {/* Custom Sharpened Graphite Pencil Cursor (desktop pointer:fine only) */}
         <PencilCursor />
 
