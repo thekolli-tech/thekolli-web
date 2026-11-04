@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1200" viewBox="0 0 1920 1200" preserveAspectRatio="none">
+  <defs>
+    <!-- Paper Crinkle Lighting Filter -->
+    <filter id="paper-wrinkles" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="5" seed="42" result="wrinkles" />
+      <feDiffuseLighting in="wrinkles" lighting-color="#ffffff" surfaceScale="3.2" diffuseConstant="1.1" result="light">
+        <feDistantLight azimuth="45" elevation="48" />
+      </feDiffuseLighting>
+      
+      <!-- Fine paper grain -->
+      <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="3" seed="18" result="grain" />
+      <feColorMatrix type="matrix" values="0 0 0 0 0.94   0 0 0 0 0.93   0 0 0 0 0.91  0 0 0 0.08 0" in="grain" result="coloredGrain" />
+
+      <feBlend mode="multiply" in="light" in2="coloredGrain" result="blendedPaper" />
+      
+      <feComponentTransfer in="blendedPaper">
+        <feFuncR type="linear" slope="0.82" intercept="0.17" />
+        <feFuncG type="linear" slope="0.82" intercept="0.17" />
+        <feFuncB type="linear" slope="0.80" intercept="0.18" />
+      </feComponentTransfer>
+    </filter>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="#FBFBF9" />
+  <rect width="100%" height="100%" fill="#FFFFFF" filter="url(#paper-wrinkles)" opacity="0.88" />
+</svg>

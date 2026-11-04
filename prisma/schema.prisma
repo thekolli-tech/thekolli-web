@@ -1,0 +1,446 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// 1. IDENTITY & AUTHENTICATION
+// ==========================================
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  SUSPENDED
+  LOCKED
+}
+
+model User {
+  id                  String       @id @default(uuid())
+  email               String       @unique
+  passwordHash        String
+  firstName           String
+  lastName            String
+  phone               String?
+  isEmailVerified     Boolean      @default(false)
+  emailVerifiedAt     DateTime?
+  emailVerifyToken    String?
+  resetPasswordToken  String?
+  resetPasswordExpires DateTime?
+  isTwoFactorEnabled  Boolean      @default(false)
+  twoFactorSecret     String?
+  failedLoginAttempts Int          @default(0)
+  lockedUntil         DateTime?
+  status              UserStatus   @default(ACTIVE)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  // Relations
+  memberships         OrganisationMembership[]
+  sessions            UserSession[]
+  auditLogs           AuditLog[]
+  notifications       Notification[]
+  sentInvitations     OrganisationInvitation[] @relation("InvitedBy")
+
+  @@index([email])
+}
+
+model UserSession {
+  id           String    @id @default(uuid())
+  userId       String
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+  lastActiveAt DateTime  @default(now())
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+// ==========================================
+// 2. MULTI-TENANT ORGANISATIONS & WORKSPACES
+// ==========================================
+
+enum OrgStatus {
+  ACTIVE
+  PENDING_ONBOARDING
+  SUSPENDED
+  ARCHIVED
+}
+
+model Organisation {
+  id           String     @id @default(uuid())
+  name         String     // Display Name
+  legalName    String     // Registered Legal Name
+  slug         String     @unique
+  orgType      String     @default("ENTERPRISE") // PRIVATE_LIMITED, LLC, SOLE_PROP, etc.
+  contactEmail String
+  contactPhone String?
+  address      String?
+  country      String     @default("India")
+  timezone     String     @default("Asia/Kolkata")
+  currency     String     @default("INR")
+  status       OrgStatus  @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  memberships       OrganisationMembership[]
+  workspaces        Workspace[]
+  invitations       OrganisationInvitation[]
+  customRoles       Role[]
+  subscription      OrganisationSubscription?
+  moduleEntitlements ModuleEntitlement[]
+  auditLogs         AuditLog[]
+  notifications     Notification[]
+  invoices          Invoice[]
+  paymentRecords    PaymentRecord[]
+  billingEvents     BillingEvent[]
+
+  @@index([slug])
+}
+
+enum MembershipStatus {
+  ACTIVE
+  SUSPENDED
+  INVITED
+}
+
+model OrganisationMembership {
+  id             String           @id @default(uuid())
+  userId         String
+  organisationId String
+  roleId         String
+  isDefault      Boolean          @default(false)
+  status         MembershipStatus @default(ACTIVE)
+  joinedAt       DateTime         @default(now())
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  role         Role         @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, organisationId])
+  @@index([organisationId])
+  @@index([userId])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+model OrganisationInvitation {
+  id             String           @id @default(uuid())
+  organisationId String
+  email          String
+  roleId         String
+  token          String           @unique
+  status         InvitationStatus @default(PENDING)
+  expiresAt      DateTime
+  invitedById    String
+  createdAt      DateTime         @default(now())
+  acceptedAt     DateTime?
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  role         Role         @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  invitedBy    User         @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([organisationId])
+  @@index([token])
+  @@index([email])
+}
+
+model Workspace {
+  id             String   @id @default(uuid())
+  organisationId String
+  name           String
+  slug           String
+  description    String?
+  isDefault      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, slug])
+  @@index([organisationId])
+}
+
+// ==========================================
+// 3. ROLE-BASED ACCESS CONTROL (RBAC)
+// ==========================================
+
+model Role {
+  id             String   @id @default(uuid())
+  organisationId String?  // Null for global system roles (e.g. PLATFORM_SUPER_ADMIN, ORG_OWNER, ORG_ADMIN, MANAGER, EMPLOYEE)
+  name           String   // e.g. "Platform Super Admin", "Organisation Owner", "Organisation Admin", "Manager", "Employee"
+  key            String   // e.g. "OWNER", "ADMIN", "MANAGER", "EMPLOYEE", "CUSTOM"
+  description    String
+  isSystem       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organisation   Organisation?            @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  memberships    OrganisationMembership[]
+  invitations    OrganisationInvitation[]
+  permissions    RolePermission[]
+
+  @@unique([organisationId, key])
+  @@index([organisationId])
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  module      String   // "PLATFORM", "TKERP", "TKFIN", "TKCRM", "TKHR", etc.
+  resource    String   // "ORGANISATION", "USER", "ROLE", "BILLING", "DOCUMENT", "PROJECT", "INVENTORY"
+  action      String   // "CREATE", "READ", "UPDATE", "DELETE", "APPROVE", "EXPORT", "MANAGE"
+  scope       String   // "ORGANISATION", "WORKSPACE", "OWN"
+  description String
+  createdAt   DateTime @default(now())
+
+  rolePermissions RolePermission[]
+
+  @@unique([module, resource, action, scope])
+  @@index([module, resource])
+}
+
+model RolePermission {
+  id           String   @id @default(uuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+// ==========================================
+// 4. SUBSCRIPTION & MODULE ENTITLEMENTS
+// ==========================================
+
+enum BillingInterval {
+  MONTHLY
+  ANNUAL
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  GRACE_PERIOD
+  SUSPENDED
+  CANCELLED
+  EXPIRED
+}
+
+model SubscriptionPlan {
+  id                   String          @id @default(uuid())
+  code                 String          @unique // e.g. "STARTER", "PROFESSIONAL", "ENTERPRISE"
+  name                 String
+  description          String
+  billingInterval      BillingInterval @default(MONTHLY)
+  basePriceInCents     Int             @default(0) // Recurring price in minor units (e.g. cents/paise)
+  onboardingFeeInCents Int             @default(0) // One-time onboarding charge
+  maxUsers             Int             @default(10)
+  maxWorkspaces        Int             @default(3)
+  features             Json            @default("[]") // Array of feature tags
+  isPublic             Boolean         @default(true)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  subscriptions OrganisationSubscription[]
+}
+
+model OrganisationSubscription {
+  id                 String             @id @default(uuid())
+  organisationId     String             @unique
+  planId             String
+  status             SubscriptionStatus @default(ACTIVE)
+  startDate          DateTime           @default(now())
+  currentPeriodStart DateTime           @default(now())
+  currentPeriodEnd   DateTime
+  renewalDate        DateTime
+  gracePeriodEnd     DateTime?
+  cancelledAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  organisation Organisation     @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  plan         SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+  invoices     Invoice[]
+
+  @@index([organisationId])
+  @@index([status])
+}
+
+model Module {
+  id          String   @id @default(uuid())
+  code        String   @unique // e.g. "tkerp", "tkcrm", "tkhr", "tkfin", etc.
+  name        String   // e.g. "TKERP"
+  category    String   // e.g. "Business Operations", "Finance", "People", "Productivity", "Customer Operations", "Connectivity"
+  description String
+  isCore      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  entitlements ModuleEntitlement[]
+}
+
+model ModuleEntitlement {
+  id             String    @id @default(uuid())
+  organisationId String
+  moduleId       String
+  isEnabled      Boolean   @default(true)
+  enabledAt      DateTime  @default(now())
+  expiresAt      DateTime?
+  quotaLimits    Json?     // Optional limits (e.g. { maxRecords: 50000 })
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  module       Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, moduleId])
+  @@index([organisationId])
+  @@index([moduleId])
+}
+
+// ==========================================
+// 5. BILLING & INVOICING
+// ==========================================
+
+enum InvoiceStatus {
+  DRAFT
+  OPEN
+  PAID
+  VOID
+  UNCOLLECTIBLE
+}
+
+model Invoice {
+  id               String        @id @default(uuid())
+  organisationId   String
+  subscriptionId   String?
+  invoiceNumber    String        @unique // e.g. "INV-TK-2026-0001"
+  amountDueInCents Int
+  amountPaidInCents Int          @default(0)
+  currency         String        @default("INR")
+  status           InvoiceStatus @default(OPEN)
+  dueDate          DateTime
+  paidAt           DateTime?
+  pdfUrl           String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  organisation   Organisation              @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  subscription   OrganisationSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  paymentRecords PaymentRecord[]
+
+  @@index([organisationId])
+  @@index([invoiceNumber])
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+model PaymentRecord {
+  id                   String        @id @default(uuid())
+  invoiceId            String
+  organisationId       String
+  amountInCents        Int
+  currency             String        @default("INR")
+  paymentMethod        String        @default("BANK_TRANSFER") // BANK_TRANSFER, WIRE, CARD, UPI
+  status               PaymentStatus @default(PENDING)
+  transactionReference String?
+  failureReason        String?
+  processedAt          DateTime?
+  createdAt            DateTime      @default(now())
+
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@index([organisationId])
+  @@index([invoiceId])
+}
+
+model BillingEvent {
+  id             String   @id @default(uuid())
+  organisationId String
+  eventType      String   // "SUBSCRIPTION_CREATED", "INVOICE_GENERATED", "PAYMENT_SUCCEEDED", "PLAN_UPGRADED"
+  details        Json
+  createdAt      DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@index([organisationId])
+}
+
+// ==========================================
+// 6. AUDIT LOGGING & NOTIFICATIONS
+// ==========================================
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  organisationId String
+  userId         String?
+  action         String   // e.g. "AUTH_LOGIN", "ORG_CREATED", "MEMBER_INVITED", "ROLE_UPDATED"
+  entityType     String   // e.g. "USER", "ORGANISATION", "WORKSPACE", "MEMBERSHIP"
+  entityId       String?
+  metadata       Json?    // Contextual payload
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organisationId])
+  @@index([userId])
+  @@index([action])
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  ACTION_REQUIRED
+  APPROVAL
+  SUBSCRIPTION
+}
+
+model Notification {
+  id             String           @id @default(uuid())
+  organisationId String
+  userId         String
+  title          String
+  message        String
+  type           NotificationType @default(INFO)
+  isRead         Boolean          @default(false)
+  readAt         DateTime?
+  link           String?
+  createdAt      DateTime         @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organisationId])
+  @@index([userId])
+  @@index([isRead])
+}
