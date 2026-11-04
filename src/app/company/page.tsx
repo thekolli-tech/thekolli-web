@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { siteConfig } from "@/config/site";
 import { ArchitecturalDrawingIllustration } from "@/components/illustrations/ArchitecturalDrawingIllustration";
 import { ConnectedSystemsIllustration } from "@/components/illustrations/ConnectedSystemsIllustration";
+import Image from "next/image";
 import { MessageCircle, Mail, MapPin } from "lucide-react";
 
 export const metadata: Metadata = constructMetadata({
@@ -50,8 +51,32 @@ export default function CompanyPage() {
             </div>
           </div>
 
-          <div className="border border-[#D9D9D9] bg-[#FFFFFF] p-6 lg:col-span-5 shadow-xs">
-            <ArchitecturalDrawingIllustration caption="FOUNDATIONAL ARCHITECTURE BLUEPRINT" />
+          {/* Founder Portrait Plate */}
+          <div className="border-2 border-[#242424] bg-[#FFFFFF] p-5 lg:col-span-5 shadow-sm">
+            <div className="relative overflow-hidden border border-[#D9D9D9] bg-[#F6F5F0]">
+              <Image
+                src="/brand/charan-teja-kolli.jpg"
+                alt="Charan Teja Kolli — Founder of THEKOLLI"
+                width={600}
+                height={660}
+                className="w-full h-auto object-cover grayscale contrast-105"
+                priority
+              />
+            </div>
+
+            <div className="mt-4 flex items-baseline justify-between border-t border-[#D9D9D9] pt-3">
+              <div>
+                <span className="font-hand-heading text-2xl font-bold text-[#242424] block leading-tight">
+                  Charan Teja Kolli
+                </span>
+                <span className="font-hand-draft text-xs uppercase text-[#777777] block mt-0.5">
+                  Founder &bull; THEKOLLI
+                </span>
+              </div>
+              <span className="font-hand-draft text-[11px] border border-[#242424] px-2 py-0.5 text-[#242424]">
+                FIG. 02 &bull; FOUNDER
+              </span>
+            </div>
           </div>
         </div>
 
